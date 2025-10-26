@@ -85,22 +85,24 @@ final class OrderRepository implements OrderInterface
 
   public function find(string $order): JsonResponse
   {
-    $order = Order::select(
-      'C.NOMBRE_CLIENTE AS nombre',
-      'UnoEE.dbo.VWS_PEDIDOS.PEDIDO_SIESA AS n_order',
-      'UnoEE.dbo.VWS_PEDIDOS.ESTADO AS status',
-      DB::raw('CONVERT(date, UnoEE.dbo.VWS_PEDIDOS.FECHA_PEDIDO) as release_date'),
-      DB::raw('CONVERT(date, UnoEE.dbo.VWS_PEDIDOS.FECHA_CREACION) AS release_order'), //FECHA_ORDEN no existe en la nueva tabla, se usa FECHA_CREACION
-      DB::raw('"" AS deliver_start'), //  DB::raw('CONVERT(date, samy.PEDIDO.FECHA_PROX_EMBARQU) AS deliver_start'),
-      DB::raw('CONVERT(date, DR.RemesaFechaEntrega) AS deliver_end'),
-      'DR.Remesa as remittance',
-      'DR.Estado as status_remittance'
-    )->join('UnoEE.dbo.VWS_GBICLIENTES AS C', 'C.CLIENTE', '=', 'UnoEE.dbo.VWS_PEDIDOS.CLIENTE_SUC')
-      ->leftJoin('UnoEE.dbo.TIC_DOCUMENTOSREMESAS AS DR', 'DR.PedidoId', '=', 'UnoEE.dbo.VWS_PEDIDOS.PEDIDO_SIESA')
-      ->where('UnoEE.dbo.VWS_PEDIDOS.PEDIDO_SIESA', '=', $order)
-      ->get();
+    $order = Order::from('UnoEE.dbo.VWS_PEDIDOS as P')
+        ->select([
+            'C.NOMBRE_CLIENTE AS nombre',
+            'P.PEDIDO_SIESA AS n_order',
+            'P.ESTADO AS status',
+            DB::raw('CONVERT(date, P.FECHA_PEDIDO) AS release_date'),
+            DB::raw('CONVERT(date, P.FECHA_CREACION) AS release_order'),
+            DB::raw("'' AS deliver_start"), 
+            DB::raw('CONVERT(date, DR.RemesaFechaEntrega) AS deliver_end'),
+            'DR.Remesa AS remittance',
+            'DR.Estado AS status_remittance',
+        ])
+        ->join('UnoEE.dbo.VWS_GBICLIENTES AS C', 'C.CLIENTE', '=', 'P.CLIENTE_SUC')
+        ->leftJoin('UnoEE.dbo.TIC_DOCUMENTOSREMESAS AS DR', 'DR.PedidoId', '=', 'P.PEDIDO_SIESA')
+        ->where('P.PEDIDO_SIESA', '=', $order)
+        ->first(); // first() porque buscas un pedido concreto
 
-    return response()->json($order->toArray());
+    return response()->json($order ? $order->toArray() : []);
   }
 
   // public function getOrderDetail(string $order): JsonResponse
