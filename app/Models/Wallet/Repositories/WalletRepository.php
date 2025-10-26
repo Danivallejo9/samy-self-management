@@ -35,24 +35,23 @@ final class WalletRepository implements WalletInterface
 
   //   return response()->json($wallet);
   // }
-
   public function getInvoices(string $idClient): JsonResponse
   {
     $wallet = Wallet::select(
-      'CA.TIPO_DOC  AS Fac_rec', // PENDIENTE CAMBIO
-      'CA.FACTURA AS Consecutivo',
-      '"" AS tipocred', //PENDIENTE CAMBIO
+      'TIPO_DOC  AS Fac_rec', // PENDIENTE CAMBIO
+      'FACTURA AS Consecutivo',
+      DB::raw('"" AS tipocred'), //PENDIENTE CAMBIO
       DB::raw("CONVERT (VARCHAR(16), FECHA, 111) AS FEmision"),
       DB::raw("CONVERT (VARCHAR(16), FECHA_VENCE, 111) AS FVence"),
-      'CA.COND_PAGO AS cond_pago',
-      'CA.DIAS_VENCIDO AS DAtraso',
-      'CA.SALDO AS saldo', 
-      '"" AS Valor', //PENDIENTE CAMBIO
-      'CA.LIMITE_CREDITO AS limite',
-      '"" AS valorpago', //PENDIENTE CAMBIO
-      DB::raw("CONVERT (VARCHAR(16), FECHAPAGO, 111) AS Fpago"), //PENDIENTE CAMBIO
-      '"" AS credito', //PENDIENTE CAMBIO
-      'CA.COND_PAGO AS Plazo'
+      'COND_PAGO AS cond_pago',
+      'DIAS_VENCIDO AS DAtraso',
+      'SALDO AS saldo', 
+      DB::raw('"" AS Valor'), //PENDIENTE CAMBIO
+      'LIMITE_CREDITO AS limite',
+      DB::raw('"" AS valorpago'), //PENDIENTE CAMBIO
+      DB::raw('"" AS Fpago'), //PENDIENTE CAMBIO
+      DB::raw('"" AS credito'), //PENDIENTE CAMBIO
+      'COND_PAGO AS Plazo'
     )
       ->where('CLIENTE', $idClient)
       ->get()
@@ -104,9 +103,9 @@ final class WalletRepository implements WalletInterface
         'CA.CUPO_DISPONIBLE AS cupo_disp',
         'CL.NOMBRE_CLIENTE AS nombre',
         DB::raw('ISNULL((
-            SELECT MAX(CA.DIAS_VENCIDO)
-            FROM UnoEE.dbo.VWS_GBICARTERA AS CA
-            WHERE CA.CLIENTE = EC.CLIENTE
+            SELECT MAX(CA2.DIAS_VENCIDO)
+            FROM UnoEE.dbo.VWS_GBICARTERA AS CA2
+            WHERE CA2.CLIENTE = EC.CLIENTE
         ), 0) AS dia_atraso'),
         DB::raw('(
             SELECT SUM(CAST(TOTAL_PEDIDO AS FLOAT)) AS valor_pedidos 

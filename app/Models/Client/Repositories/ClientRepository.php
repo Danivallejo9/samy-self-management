@@ -34,7 +34,7 @@ final class ClientRepository implements ClientInterface
   //   return response()->json($client);
   // }
 
-    public function getClient(string $client, string $invoice): JsonResponse
+  public function getClient(string $client, string $invoice): JsonResponse
   {
     // $this->invoiceId = $invoice;
 
@@ -88,32 +88,33 @@ final class ClientRepository implements ClientInterface
   //   return $client;
   // }
 
-    public function getClientDataByMobile(int $mobile): ?Client
+  public function getClientDataByMobile(int $mobile): ?Client
   {
     $client = Client::select(
-      'C.NOMBRE_CLIENTE AS nombre',
+      'UnoEE.dbo.VWS_GBICLIENTES.NOMBRE_CLIENTE AS nombre',
       'CC.nombre_c AS nombre_contacto', 
       'CC.apellidos_c AS apellido_contacto', 
       'CC.cargo_c AS cargo', 
-      'CA.COND_PAGO AS condicion_pago',
-      'CA.LIMITE_CREDITO AS cupo',
+      'C.COND_PAGO AS condicion_pago',
+      'C.LIMITE_CREDITO AS cupo',
       'CA.ID AS codigo_cargo', // samy.CARGOS.CODIGO AS codigo_cargo
       'CO.NOMBRE AS nombre_cobrador',
       'V.NOMBRE AS nombre_vendedor',
-      'V.CELULAR AS cel_vendedor',
+      'V.CEL_JEFEZONA AS cel_vendedor',
       'V.NOMBRE_JEFE AS jefe_zona',
       'V.CEL_JEFEZONA AS cel_jefe',
       'CO.CORREO AS correo',
-      'C.CLIENTE AS documento',
+      'UnoEE.dbo.VWS_GBICLIENTES.CLIENTE AS documento',
       'P.PEDIDO_SIESA AS n_pedido',
       'D.FechaDocumento AS fecha_liberacion' 
     )
-      ->leftJoin('UnoEE.dbo.VWS_PEDIDOS P', 'P.CLIENTE', '=', 'C.CLIENTE')
-      ->leftJoin('UnoEE.dbo.TIC_DOCUMENTOSREMESAS D', 'D.PedidoId', '=', 'P.PEDIDO_SIESA')
-      ->leftJoin('UnoEE.dbo.VWS_GBICOBRADOR CO', 'CO.CODIGO_COBRADOR', '=', 'C.COD_COBRADOR')
-      ->leftJoin('UnoEE.dbo.VWS_GBIVENDEDORES V', 'V.VENDEDOR', '=', 'C.COD_VENDEDOR')
-      ->leftJoin('SAMY_GBI.dbo.gbi_contactoscliente_cstm CC', 'CC.documento_cliente_c', '=', 'C.CLIENTE')
-      ->leftJoin('SAMY_GBI.cargos CA', 'CA.ID', '=', 'CC.cargo_c')
+      ->leftJoin('UnoEE.dbo.VWS_PEDIDOS AS P', 'P.CLIENTE_SUC', '=', 'UnoEE.dbo.VWS_GBICLIENTES.CLIENTE')
+      ->leftJoin('UnoEE.dbo.TIC_DOCUMENTOSREMESAS AS D', 'D.PedidoId', '=', 'P.PEDIDO_SIESA')
+      ->leftJoin('UnoEE.dbo.VWS_GBICOBRADOR AS CO', 'CO.CODIGO_COBRADOR', '=', 'UnoEE.dbo.VWS_GBICLIENTES.COD_COBRADOR')
+      ->leftJoin('UnoEE.dbo.VWS_GBIVENDEDORES AS V', 'V.VENDEDOR', '=', 'UnoEE.dbo.VWS_GBICLIENTES.COD_VENDEDOR')
+      ->leftJoin('SAMY_GBI.dbo.gbi_contactoscliente_cstm AS CC', 'CC.documento_cliente_c', '=', 'UnoEE.dbo.VWS_GBICLIENTES.CLIENTE')
+      ->leftJoin('SAMY_GBI.dbo.cargos AS CA', 'CA.ID', '=', 'CC.cargo_c')
+      ->leftJoin('UnoEE.dbo.VWS_GBICARTERA AS C', 'C.CLIENTE', '=', 'UnoEE.dbo.VWS_GBICLIENTES.CLIENTE')
       ->where('CC.celular_c', strval($mobile))
       ->orderBy('P.FECHA_PEDIDO', 'DESC')
       ->first();

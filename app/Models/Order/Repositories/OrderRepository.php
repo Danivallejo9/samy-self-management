@@ -55,7 +55,7 @@ final class OrderRepository implements OrderInterface
       ->where('P.FECHA_PEDIDO', '>=', $twoMonthsAgo)
     //  ->where('P.ESTADO', '!=', 'C') //PREGUNTAR QUE SIGNIFICA ESTADO C
     //  ->where('P.PEDIDO', 'not like', '%POP')
-      ->leftJoin('UnoEE.dbo.TIC_DOCUMENTOSREMESAS AS DR', 'P.PEDIDO', '=', 'DR.PedidoId')
+      ->leftJoin('UnoEE.dbo.TIC_DOCUMENTOSREMESAS AS DR', 'P.PEDIDO_SIESA', '=', 'DR.PedidoId')
       ->orderBy('P.FECHA_PEDIDO', 'ASC')
       ->get()
       ->toArray();
@@ -87,17 +87,17 @@ final class OrderRepository implements OrderInterface
   {
     $order = Order::select(
       'C.NOMBRE_CLIENTE AS nombre',
-      'P.PEDIDO_SIESA AS n_order',
-      'P.ESTADO AS status',
-      DB::raw('CONVERT(date, P.FECHA_PEDIDO) as release_date'),
-      DB::raw('CONVERT(date, P.FECHA_CREACION) AS release_order'), //FECHA_ORDEN no existe en la nueva tabla, se usa FECHA_CREACION
-      '"" AS deliver_start', //  DB::raw('CONVERT(date, samy.PEDIDO.FECHA_PROX_EMBARQU) AS deliver_start'),
+      'PEDIDO_SIESA AS n_order',
+      'ESTADO AS status',
+      DB::raw('CONVERT(date, FECHA_PEDIDO) as release_date'),
+      DB::raw('CONVERT(date, FECHA_CREACION) AS release_order'), //FECHA_ORDEN no existe en la nueva tabla, se usa FECHA_CREACION
+      DB::raw('"" AS deliver_start'), //  DB::raw('CONVERT(date, samy.PEDIDO.FECHA_PROX_EMBARQU) AS deliver_start'),
       DB::raw('CONVERT(date, DR.RemesaFechaEntrega) AS deliver_end'),
       'DR.Remesa as remittance',
       'DR.Estado as status_remittance'
-    )->join('UnoEE.dbo.VWS_GBICLIENTES AS C', 'C.CLIENTE', '=', 'UnoEE.dbo.VWS_PEDIDOS AS P.CLIENTE_SUC')
-      ->leftJoin('UnoEE.dbo.TIC_DOCUMENTOSREMESAS AS DR', 'DR.PedidoId', '=', 'P.PEDIDO_SIESA')
-      ->where('P.PEDIDO_SIESA', '=', $order)
+    )->join('UnoEE.dbo.VWS_GBICLIENTES AS C', 'C.CLIENTE', '=', 'CLIENTE_SUC')
+      ->leftJoin('UnoEE.dbo.TIC_DOCUMENTOSREMESAS AS DR', 'DR.PedidoId', '=', 'PEDIDO_SIESA')
+      ->where('PEDIDO_SIESA', '=', $order)
       ->get();
 
     return response()->json($order->toArray());
@@ -125,16 +125,16 @@ final class OrderRepository implements OrderInterface
   public function getOrderDetail(string $order): JsonResponse
   {
     $detailOrder = Order::select(
-      'P.NOMBRE_CLIENTE AS NAME',
+      'NOMBRE AS NAME',
       'PE.ID_LINEA AS LINE_ITEM',
       'PE.ARTICULO AS ITEM',
       'A.DESCRIPCION as description',
       'A.COD_BARRAS AS BAR_CODE',
       'PE.CANTIDAD_PEDIDA AS AMOUNT'
     )
-      ->join('UnoEE.dbo.VWS_PEDIDOSDETALLES AS PE', 'PE.PEDIDO', '=', 'UnoEE.dbo.VWS_PEDIDOS AS P.PEDIDO_SIESA')
-      ->join('UnoEE.dbo.VWS_GBIARTICULOS A', 'A.ARTICULO', '=', 'PE.ARTICULO')
-      ->where('P.PEDIDO_SIESA', $order)
+      ->join('UnoEE.dbo.VWS_PEDIDOSDETALLES AS PE', 'PE.PEDIDO', '=', 'PEDIDO_SIESA')
+      ->join('UnoEE.dbo.VWS_GBIARTICULOS AS A', 'A.ARTICULO', '=', 'PE.ARTICULO')
+      ->where('PEDIDO_SIESA', $order)
       ->get();
 
     // dd($detailOrder->toSql());

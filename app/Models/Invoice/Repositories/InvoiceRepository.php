@@ -34,23 +34,23 @@ final class InvoiceRepository implements InvoiceInterface
   //   return $invoices;
   // }
 
-    public function getInvoices(string $client): array
+  public function getInvoices(string $client): array
   {
     $invoices = Invoice::select(
-      'CA.TIPO_DOC  AS Fac_rec', // PENDIENTE CAMBIO
-      'CA.FACTURA AS Consecutivo',
-      '"" AS tipocred', //PENDIENTE CAMBIO
+      'TIPO_DOC  AS Fac_rec', // PENDIENTE CAMBIO
+      'FACTURA AS Consecutivo',
+      DB::raw("'' AS tipocred"),//PENDIENTE CAMBIO
       DB::raw("CONVERT (VARCHAR(16), FECHA, 111) AS FEmision"),
       DB::raw("CONVERT (VARCHAR(16), FECHA_VENCE, 111) AS FVence"),
-      'CA.COND_PAGO AS cond_pago',
-      'CA.DIAS_VENCIDO AS DAtraso',
-      'CA.SALDO AS saldo', 
-      'CA.VLR_DOCTO AS Valor', //PENDIENTE CAMBIO
-      'CA.LIMITE_CREDITO AS limite',
-      'CA.VLR_ABONOS AS valorpago', //PENDIENTE CAMBIO
-      DB::raw("CONVERT (VARCHAR(16), FECHAPAGO, 111) AS Fpago"), //PENDIENTE CAMBIO
-      '"" AS credito', //PENDIENTE CAMBIO
-      'CA.COND_PAGO AS Plazo'
+      'COND_PAGO AS cond_pago',
+      'DIAS_VENCIDO AS DAtraso',
+      'SALDO AS saldo',
+      'VLR_DOCTO AS Valor',
+      'LIMITE_CREDITO AS limite',
+      'VLR_ABONOS AS valorpago',
+      DB::raw("'' AS Fpago"), //PENDIENTE CAMBIO
+      DB::raw("'' AS credito"), //PENDIENTE CAMBIO
+      'COND_PAGO AS Plazo'
     )
       ->where('CLIENTE', $client)
       ->get()
