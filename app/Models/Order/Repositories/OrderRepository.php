@@ -87,17 +87,17 @@ final class OrderRepository implements OrderInterface
   {
     $order = Order::select(
       'C.NOMBRE_CLIENTE AS nombre',
-      'PEDIDO_SIESA AS n_order',
-      'ESTADO AS status',
-      DB::raw('CONVERT(date, FECHA_PEDIDO) as release_date'),
-      DB::raw('CONVERT(date, FECHA_CREACION) AS release_order'), //FECHA_ORDEN no existe en la nueva tabla, se usa FECHA_CREACION
+      'UnoEE.dbo.VWS_PEDIDOS.PEDIDO_SIESA AS n_order',
+      'UnoEE.dbo.VWS_PEDIDOS.ESTADO AS status',
+      DB::raw('CONVERT(date, UnoEE.dbo.VWS_PEDIDOS.FECHA_PEDIDO) as release_date'),
+      DB::raw('CONVERT(date, UnoEE.dbo.VWS_PEDIDOS.FECHA_CREACION) AS release_order'), //FECHA_ORDEN no existe en la nueva tabla, se usa FECHA_CREACION
       DB::raw('"" AS deliver_start'), //  DB::raw('CONVERT(date, samy.PEDIDO.FECHA_PROX_EMBARQU) AS deliver_start'),
       DB::raw('CONVERT(date, DR.RemesaFechaEntrega) AS deliver_end'),
       'DR.Remesa as remittance',
       'DR.Estado as status_remittance'
-    )->join('UnoEE.dbo.VWS_GBICLIENTES AS C', 'C.CLIENTE', '=', 'CLIENTE_SUC')
-      ->leftJoin('UnoEE.dbo.TIC_DOCUMENTOSREMESAS AS DR', 'DR.PedidoId', '=', 'PEDIDO_SIESA')
-      ->where('PEDIDO_SIESA', '=', $order)
+    )->join('UnoEE.dbo.VWS_GBICLIENTES AS C', 'C.CLIENTE', '=', 'UnoEE.dbo.VWS_PEDIDOS.CLIENTE_SUC')
+      ->leftJoin('UnoEE.dbo.TIC_DOCUMENTOSREMESAS AS DR', 'DR.PedidoId', '=', 'UnoEE.dbo.VWS_PEDIDOS.PEDIDO_SIESA')
+      ->where('UnoEE.dbo.VWS_PEDIDOS.PEDIDO_SIESA', '=', $order)
       ->get();
 
     return response()->json($order->toArray());
@@ -125,16 +125,16 @@ final class OrderRepository implements OrderInterface
   public function getOrderDetail(string $order): JsonResponse
   {
     $detailOrder = Order::select(
-      'NOMBRE AS NAME',
+      'UnoEE.dbo.VWS_PEDIDOS.CLIENTE AS NAME',
       'PE.ID_LINEA AS LINE_ITEM',
       'PE.ARTICULO AS ITEM',
       'A.DESCRIPCION as description',
       'A.COD_BARRAS AS BAR_CODE',
       'PE.CANTIDAD_PEDIDA AS AMOUNT'
     )
-      ->join('UnoEE.dbo.VWS_PEDIDOSDETALLES AS PE', 'PE.PEDIDO', '=', 'PEDIDO_SIESA')
+      ->join('UnoEE.dbo.VWS_PEDIDOSDETALLES AS PE', 'PE.PEDIDO', '=', 'UnoEE.dbo.VWS_PEDIDOS.PEDIDO_SIESA')
       ->join('UnoEE.dbo.VWS_GBIARTICULOS AS A', 'A.ARTICULO', '=', 'PE.ARTICULO')
-      ->where('PEDIDO_SIESA', $order)
+      ->where('UnoEE.dbo.VWS_PEDIDOS.PEDIDO_SIESA', $order)
       ->get();
 
     // dd($detailOrder->toSql());

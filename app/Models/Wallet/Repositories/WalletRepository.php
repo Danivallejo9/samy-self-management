@@ -108,7 +108,7 @@ final class WalletRepository implements WalletInterface
             WHERE CA2.CLIENTE = EC.CLIENTE
         ), 0) AS dia_atraso'),
         DB::raw('(
-            SELECT SUM(CAST(TOTAL_PEDIDO AS FLOAT)) AS valor_pedidos 
+            SELECT SUM(CAST(P.TOTAL_PEDIDO AS FLOAT)) AS valor_pedidos
             FROM UnoEE.dbo.VWS_PEDIDOS AS P
             WHERE P.CLIENTE_SUC = EC.CLIENTE AND ESTADO = 1     
         ) AS total_pedido')
