@@ -100,7 +100,7 @@ final class ClientRepository implements ClientInterface
       'CA.ID AS codigo_cargo', // samy.CARGOS.CODIGO AS codigo_cargo
       'CO.NOMBRE AS nombre_cobrador',
       'V.NOMBRE AS nombre_vendedor',
-      'V.CEL_JEFEZONA AS cel_vendedor',
+      'V.CELULAR_VENDEDOR AS cel_vendedor',
       'V.NOMBRE_JEFE AS jefe_zona',
       'V.CEL_JEFEZONA AS cel_jefe',
       'CO.CORREO AS correo',
