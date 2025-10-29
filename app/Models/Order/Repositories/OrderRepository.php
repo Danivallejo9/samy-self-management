@@ -90,11 +90,12 @@ final class OrderRepository implements OrderInterface
       'UnoEE.dbo.VWS_PEDIDOS.PEDIDO_SIESA AS n_order',
       DB::raw("
         CASE UnoEE.dbo.VWS_PEDIDOS.ESTADO
-          WHEN 0 THEN 'Retenido'
-          WHEN 1 THEN 'Facturado'
+          WHEN 0 THEN 'Elaboración'
+          WHEN 1 THEN 'Retenido'
           WHEN 2 THEN 'Aprobado'
           WHEN 3 THEN 'Comprometido'
           WHEN 4 THEN 'Facturado'
+          WHEN 9 THEN 'Anulado'
           ELSE 'Desconocido'
         END AS status
       "),
