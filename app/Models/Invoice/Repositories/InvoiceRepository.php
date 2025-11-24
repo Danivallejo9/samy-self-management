@@ -4,7 +4,6 @@ namespace App\Models\Invoice\Repositories;
 
 use App\Models\Invoice\Interfaces\InvoiceInterface;
 use App\Models\Invoice\Invoice;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 
 final class InvoiceRepository implements InvoiceInterface
@@ -34,6 +33,7 @@ final class InvoiceRepository implements InvoiceInterface
   //   return $invoices;
   // }
 
+  //MOSTRAR FACTURAS EN VER CARTERA
   public function getInvoices(string $client): array
   {
     $invoices = Invoice::select(

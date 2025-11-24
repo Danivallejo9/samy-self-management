@@ -91,34 +91,42 @@ final class WalletRepository implements WalletInterface
   //   return $clientWallet;
   // }
 
+  //MOSTRAR DATOS PRINCIPALES Y EN VER CARTERA
   public function getClientWallet(string $client): ?stdClass
   {
     // $this->client = $client;
+    $caSum = DB::table('UnoEE.dbo.VWS_GBICARTERA')
+        ->select(
+            'CLIENTE',
+            DB::raw('SUM(SALDO) AS deuda'),
+            DB::raw('MAX(DIAS_VENCIDO) AS dia_atraso')
+        )
+        ->groupBy('CLIENTE');
+
     $clientWallet = DB::table('UnoEE.dbo.VWS_GBIESTADOCLIENTE AS EC')
-      ->select(
-        'EC.LIMITE_CREDITO AS limite',
-        'EC.COND_PAGO',
-        'CA.SALDO AS deuda',
-        'EC.PORAPLICAR AS por_aplicar',
-        'CA.CUPO_DISPONIBLE AS cupo_disp',
-        'CL.NOMBRE_CLIENTE AS nombre',
-        DB::raw('ISNULL((
-            SELECT MAX(CA2.DIAS_VENCIDO)
-            FROM UnoEE.dbo.VWS_GBICARTERA AS CA2
-            WHERE CA2.CLIENTE = EC.CLIENTE
-        ), 0) AS dia_atraso'),
-        DB::raw('(
-            SELECT SUM(CAST(P.TOTAL_PEDIDO AS FLOAT)) AS valor_pedidos
-            FROM UnoEE.dbo.VWS_PEDIDOS AS P
-            WHERE P.CLIENTE_SUC = EC.CLIENTE AND ESTADO = 1     
-        ) AS total_pedido')
-      )
-      ->join('UnoEE.dbo.VWS_GBICARTERA AS CA', 'CA.CLIENTE', '=', 'EC.CLIENTE')
-      ->join('UnoEE.dbo.VWS_GBICLIENTES AS CL', function ($join) use ($client) {
-        $join->on('CL.CLIENTE', '=', 'EC.CLIENTE')
-          ->where('EC.CLIENTE', '=', $client);
-      })
-      ->first();
+        ->select(
+            'EC.LIMITE_CREDITO AS limite',
+            'EC.COND_PAGO',
+            // deuda desde la subconsulta (COALESCE por si no hay filas en cartera)
+            DB::raw('COALESCE(CA_SUM.deuda, 0) AS deuda'),
+            'EC.PORAPLICAR AS por_aplicar',
+            // cupo_disp calculado según la fórmula: limite - SUM(saldo) + por_aplicar
+            DB::raw('COALESCE(EC.LIMITE_CREDITO, 0) - COALESCE(CA_SUM.deuda, 0) + COALESCE(EC.PORAPLICAR, 0) AS cupo_disp'),
+            'CL.NOMBRE_CLIENTE AS nombre',
+            DB::raw('COALESCE(CA_SUM.dia_atraso, 0) AS dia_atraso'),
+            DB::raw('(
+                SELECT SUM(CAST(P.TOTAL_PEDIDO AS FLOAT))
+                FROM UnoEE.dbo.VWS_PEDIDOS AS P
+                WHERE P.CLIENTE_SUC = EC.CLIENTE
+                  AND P.ESTADO = 1
+            ) AS total_pedido')
+        )
+        ->leftJoinSub($caSum, 'CA_SUM', function ($join) {
+            $join->on('CA_SUM.CLIENTE', '=', 'EC.CLIENTE');
+        })
+        ->leftJoin('UnoEE.dbo.VWS_GBICLIENTES AS CL', 'CL.CLIENTE', '=', 'EC.CLIENTE')
+        ->where('EC.CLIENTE', $client)
+        ->first();
 
     return $clientWallet;
     // WHERE P.CLIENTE_SUC = EC.CLIENTE AND ESTADO = \'N\'   PENDIENTE PORQUE ESTADO NO EXISTE, SON NÚMEROS
