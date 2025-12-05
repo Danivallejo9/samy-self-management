@@ -98,7 +98,7 @@ final class ClientRepository implements ClientInterface
       'C.COND_PAGO AS condicion_pago',
       'C.LIMITE_CREDITO AS cupo',
       'CA.ID AS codigo_cargo', // samy.CARGOS.CODIGO AS codigo_cargo
-      'CO.NOMBRE AS nombre_cobrador',
+      'CO.NOMBRE AS Nombre_Cobrador',
       'V.NOMBRE AS nombre_vendedor',
       'V.CELULAR_VENDEDOR AS cel_vendedor',
       'V.NOMBRE_JEFE AS jefe_zona',
